@@ -1,40 +1,53 @@
 import pandas as pd
-import numpy as np
+# import numpy as np
 from sklearn.model_selection import train_test_split
 from sklearn.linear_model import LinearRegression
-import statsmodels.formula.api as sm
-import statsmodels.api as sm
+# import statsmodels.formula.api as sm
 from sklearn.metrics import r2_score
 import matplotlib.pyplot as plt
 import seaborn as sns
-import scikitplot as skplt
 from mlxtend.feature_selection import SequentialFeatureSelector as sfs
 from sklearn.model_selection import KFold
+# from statsmodels.stats.outliers_influence import variance_inflation_factor
+from sklearn.preprocessing import StandardScaler
 
+#backword elimination + k-fold + standartization
 cv = KFold(n_splits=2, random_state=0, shuffle=False)
 def backwordelem(regressor,X,y,dataset):
-    print(dataset)
-    sfs1=sfs(regressor, k_features=12, forward=False, verbose=1,cv=cv, scoring='neg_mean_squared_error')
+    
+    sfs1=sfs(regressor, k_features=8, forward=False, verbose=1,cv=cv, scoring='neg_mean_squared_error')
     sfs1=sfs1.fit(dataset.iloc[:,5:23], y)
     list_names= list(sfs1.k_feature_names_)
     dataset_new=dataset[list_names]
     X=dataset_new.iloc[:].values
-    return train_test_split(X, y, test_size = 0.2, random_state = 0)
-    
+    X_train, X_test, y_train, y_test=train_test_split(X, y, test_size = 0.2, random_state = 0)
+    #scaling the data
+    sc_x = StandardScaler()
+    X_train = sc_x.fit_transform(X_train)
+    X_test = sc_x.transform(X_test) 
+    return X_train,X_test,y_train, y_test
+ #
  
 dataset = pd.read_csv('COVID-19.csv')
-print(dataset)
-X = dataset.iloc[:,5:23].values
-
 index = dataset.index
 n = len(index)
-    
+ 
+#correlation plot   
 fig_dims = (12, 8)
 fig, ax = plt.subplots(figsize=fig_dims)
-sns.heatmap(dataset.iloc[:,5:23].corr(), ax=ax)
+sns.heatmap(dataset.iloc[:,2:23].corr(), ax=ax)
 plt.show()
 
+#columns variation
 print(abs(dataset.iloc[:,2:23].corr()['Positive Tests']))
+
+#data after taking out 3 columns with no corelation to the depended variabol
+X = dataset.iloc[:,[6,7,8,9,10,11,12,14,15,16,17,18,19,20,22]].values
+
+#check for multicolenarity
+#vif = [variance_inflation_factor(X,i) for i in range(dataset.iloc[:,5:23].shape[1])]
+#print(vif)
+
 
 for i in [3,4]: # start with positive column and then the negative column
     sns.set_theme()
@@ -46,7 +59,7 @@ for i in [3,4]: # start with positive column and then the negative column
     # Splitting the dataset into the Training set and Test se
     X_train, X_test, y_train, y_test = train_test_split(X, y, test_size = 0.2, random_state = 0)
     
-    # Fitting Multiple Linear Regression to the Training set
+    ########################## linear regression #######################
     
     regressor = LinearRegression()
     X_train, X_test, y_train, y_test=backwordelem(regressor,X,y,dataset)
@@ -71,8 +84,7 @@ for i in [3,4]: # start with positive column and then the negative column
         })
     ## בשלב זה צריך לעשות אילמנציה כמו שלמדנו בכיתה
     
-    #polynom
-    from sklearn.pipeline import make_pipeline
+    #p######################### polynom regression#####################
     from sklearn.preprocessing import PolynomialFeatures
     
     for j in range(1,6):
@@ -110,12 +122,11 @@ for i in [3,4]: # start with positive column and then the negative column
             'best_params': "2 degrees b0 = "+str(b_0_poly)+" b's =  "+str(b_1_poly )
         })
     
-    ## cross validation
+    ################################### cross validation ##############################
     from sklearn.ensemble import RandomForestClassifier
     from sklearn.linear_model import Ridge
     from sklearn.model_selection import GridSearchCV
     from numpy import arange
-    from sklearn.model_selection import RepeatedKFold
     from sklearn.linear_model import Lasso
     from sklearn.neighbors import KNeighborsClassifier
     
@@ -123,13 +134,13 @@ for i in [3,4]: # start with positive column and then the negative column
         'ridge': {
             'model': Ridge(),
             'params' : {
-                'alpha': arange(0, 1, 0.1) ,
+                'alpha': arange(0, 5, 0.1) ,
             }  
         },
         'lasso': {
             'model': Lasso(),
             'params' : {
-                'alpha': arange(0, 1, 0.1) 
+                'alpha': arange(0,5, 0.1) 
             }  
         },
         'random_forest': {
@@ -162,7 +173,7 @@ for i in [3,4]: # start with positive column and then the negative column
     
     df = pd.DataFrame(scores,columns=['model','best_score','best_params'])
     
-    #ridge regression
+    ############################### ridge regression ##############################
     
     fig, (ax1,ax2,ax3) = plt.subplots(1, 3, figsize=(15, 5), sharey=True)
     
@@ -175,10 +186,9 @@ for i in [3,4]: # start with positive column and then the negative column
     y_pred_ridge = model_ridge.predict(X_test)
     r2_ridge=r2_score(y_test , y_pred_ridge)
     
-    
     sns.regplot(y_test,  y_pred_ridge,scatter_kws = {'color': 'brown'}, line_kws = {'color': 'red'},ax=ax1).set_title('alpha = 0.1 : r2 = '+str(round(r2_ridge,2)))
     
-    model_ridge=Ridge(alpha=0.9)
+    model_ridge=Ridge(alpha=5)
 
     #backword elimination
     X_train, X_test, y_train, y_test=backwordelem(model_ridge,X,y,dataset)
@@ -187,13 +197,14 @@ for i in [3,4]: # start with positive column and then the negative column
     y_pred_ridge = model_ridge.predict(X_test)
     r2_ridge=r2_score(y_test , y_pred_ridge)
     
-    sns.regplot(y_test,  y_pred_ridge,scatter_kws = {'color': 'brown'}, line_kws = {'color': 'red'},ax=ax2).set_title(' alpha = 0.9 : r2 = '+str(round(r2_ridge,2)))
+    sns.regplot(y_test,  y_pred_ridge,scatter_kws = {'color': 'brown'}, line_kws = {'color': 'red'},ax=ax2).set_title(' alpha = 5 : r2 = '+str(round(r2_ridge,2)))
     
     model_ridge=Ridge(alpha=df.iloc[2]['best_params']['alpha'])
 
     #backword elimination
     X_train, X_test, y_train, y_test=backwordelem(model_ridge,X,y,dataset)
-    
+
+
     model_ridge.fit(X_train,y_train)
     y_pred_ridge = model_ridge.predict(X_test)
     r2_ridge=r2_score(y_test , y_pred_ridge)
@@ -209,7 +220,7 @@ for i in [3,4]: # start with positive column and then the negative column
     
     plt.clf()
     
-    #lasso regression
+    ################################ lasso regression #############################
     
     fig, (ax1,ax2,ax3) = plt.subplots(1, 3, figsize=(15, 5), sharey=True)
     
@@ -224,9 +235,9 @@ for i in [3,4]: # start with positive column and then the negative column
     
     sns.regplot(y_test,  y_pred_lasso,scatter_kws = {'color': 'black'}, line_kws = {'color': 'red'},ax=ax1).set_title('alpha = 0.1 : r2 = '+str(round(r2_lasso,2)))
     
-    model_lasso=Lasso(alpha=0.9)
+    model_lasso=Lasso(alpha=5)
     
-    #backword elimination
+    # backword elimination
     X_train, X_test, y_train, y_test=backwordelem(model_lasso,X,y,dataset)
     
     model_lasso.fit(X_train,y_train)
@@ -234,7 +245,7 @@ for i in [3,4]: # start with positive column and then the negative column
     r2_lasso=r2_score(y_test , y_pred_lasso)
 
     
-    sns.regplot(y_test,  y_pred_lasso,scatter_kws = {'color': 'black'}, line_kws = {'color': 'red'},ax=ax2).set_title(' alpha = 0.9 : r2 = '+str(round(r2_lasso,2)))
+    sns.regplot(y_test,  y_pred_lasso,scatter_kws = {'color': 'black'}, line_kws = {'color': 'red'},ax=ax2).set_title(' alpha =5 : r2 = '+str(round(r2_lasso,2)))
 
     model_lasso=Lasso(alpha=df.iloc[3]['best_params']['alpha'])
     
@@ -255,10 +266,11 @@ for i in [3,4]: # start with positive column and then the negative column
     
     plt.clf()
     
-    #random forest
+    #################################### random forest ##############################
     
     fig, (ax1,ax2,ax3) = plt.subplots(1, 3, figsize=(20, 5), sharey=True)
     
+    # random forest n_estimators=1,max_depth=2
     RandomForest=RandomForestClassifier(n_estimators=1,max_depth=2)
     
     #backword elimination
@@ -268,8 +280,9 @@ for i in [3,4]: # start with positive column and then the negative column
     y_pred_RandomForest = RandomForest.predict(X_test)
     r2_RandomForest=r2_score(y_test , y_pred_RandomForest)
 
-    
     sns.regplot(y_test, y_pred_RandomForest,scatter_kws = {'color': 'purple'}, line_kws = {'color': 'red'},ax=ax1).set_title('minimum n=1 depth =2 : r2 = '+str(round(r2_RandomForest,2)))
+    
+    # random forest n_estimators=3,max_depth=7
     
     RandomForest=RandomForestClassifier(n_estimators=3,max_depth=7)
     
@@ -282,6 +295,7 @@ for i in [3,4]: # start with positive column and then the negative column
     
     sns.regplot(y_test, y_pred_RandomForest,scatter_kws = {'color': 'purple'}, line_kws = {'color': 'red'},ax=ax2).set_title('maximum n=3 depth =7 : r2 = '+str(round(r2_RandomForest,2)))
     
+    #random forest with the best parameters
 
     RandomForest=RandomForestClassifier(n_estimators=df.iloc[4]['best_params']['n_estimators'],max_depth=df.iloc[4]['best_params']['max_depth'])
     
@@ -301,9 +315,10 @@ for i in [3,4]: # start with positive column and then the negative column
     
     plt.clf()
     
-    #knn
+    #################################### knn ###################################
     fig, (ax1,ax2,ax3) = plt.subplots(1, 3, figsize=(15, 5), sharey=True)
     
+    # knn with 3 neighbors
     KNeighbors=KNeighborsClassifier(3)
     
     #backword elimination
@@ -314,6 +329,8 @@ for i in [3,4]: # start with positive column and then the negative column
     r2_KNeighbors=r2_score(y_test , y_pred_KNeighbors)
 
     sns.regplot(y_test, y_pred_KNeighbors,scatter_kws = {'color': 'magenta'}, line_kws = {'color': 'red'},ax=ax1).set_title('minimum k =3 :r2= '+str(round( r2_KNeighbors,2)))
+    
+    # knn with 20 neighbors
     
     KNeighbors=KNeighborsClassifier(20)
     
@@ -326,6 +343,8 @@ for i in [3,4]: # start with positive column and then the negative column
 
     sns.regplot(y_test, y_pred_KNeighbors,scatter_kws = {'color': 'magenta'}, line_kws = {'color': 'red'},ax=ax2).set_title(' maximum k =20 :r2= '+str(round( r2_KNeighbors,2)))
 
+    # knn with 3the best parametes
+    
     KNeighbors=KNeighborsClassifier(n_neighbors=df.iloc[5]['best_params']['n_neighbors'], metric = 'minkowski',p=2)
     
     #backword elimination
@@ -349,6 +368,8 @@ for i in [3,4]: # start with positive column and then the negative column
     print(comperison)
     print(df)
     plt.clf()
-
+    
+    dataset = pd.read_csv('COVID-19.csv')
+    X = dataset.iloc[:,5:22].values
 
     
