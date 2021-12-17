@@ -8,78 +8,160 @@ from sklearn.metrics import r2_score
 import matplotlib.pyplot as plt
 import seaborn as sns
 import scikitplot as skplt
+from sklearn.preprocessing import StandardScaler
+from sklearn.preprocessing import PolynomialFeatures
 
-for i in [3,4]: # start with positive column and then the negative column
-    sns.set_theme()
+dataset = pd.read_csv('COVID-19.csv')
+X = dataset.iloc[:,5:23].values
+y = dataset.iloc[:, 2].values
+
+index = dataset.index
+n = len(index)
+ 
+###################################### looking on the data #########################3  
+fig_dims = (12, 8)
+fig, ax = plt.subplots(figsize=fig_dims)
+sns.heatmap(dataset.iloc[:,2:23].corr(), ax=ax)
+plt.show()
+
+# #columns variation
+print(abs(dataset.iloc[:,2:23].corr()['Positive Tests']))
     
+
+# ########################### backword elimination for ositive tests#######################
+X=np.append(arr=np.ones((n,1)).astype(int),values=X ,axis=1)
+    
+X_opt=X[ :, 0:19]
+X_opt = np.array(X_opt, dtype=float)
+regressor_OLS = sm.OLS(y,X_opt).fit()
+print(regressor_OLS.summary()) 
+
+X_opt=X_opt[:,[0,1,2,3,4,5,6,7,8,9,11,12,13,14,15,16,17,18]]
+X_opt = np.array(X_opt, dtype=float)
+regressor_OLS = sm.OLS(y,X_opt).fit()
+print(regressor_OLS.summary())
+
+
+X_opt=X_opt[:,[0,1,2,3,4,5,6,7,8,9,11,12,13,14,15,16,17]]
+X_opt = np.array(X_opt, dtype=float)
+regressor_OLS = sm.OLS(y,X_opt).fit()
+print(regressor_OLS.summary())
+
+X_opt=X_opt[:,[0,1,2,3,4,5,6,7,8,10,11,12,13,14,15,16]]
+X_opt = np.array(X_opt, dtype=float)
+regressor_OLS = sm.OLS(y,X_opt).fit()
+print(regressor_OLS.summary())
+
+X_opt=X_opt[:,[0,1,2,3,4,5,6,7,9,10,11,12,13,14,15]]
+X_opt = np.array(X_opt, dtype=float)
+regressor_OLS = sm.OLS(y,X_opt).fit()
+print(regressor_OLS.summary())
+
+X_opt=X_opt[:,[0,1,2,3,4,5,6,7,8,9,10,11,12,14]]
+X_opt = np.array(X_opt, dtype=float)
+regressor_OLS = sm.OLS(y,X_opt).fit()
+print(regressor_OLS.summary())
+
+X_opt=X_opt[:,[0,1,2,4,5,6,7,8,9,10,11,12,13]]
+X_opt = np.array(X_opt, dtype=float)
+regressor_OLS = sm.OLS(y,X_opt).fit()
+print(regressor_OLS.summary())
+
+X_opt=X_opt[:,[0,1,2,3,4,5,6,8,9,10,11,12]]
+X_opt = np.array(X_opt, dtype=float)
+regressor_OLS = sm.OLS(y,X_opt).fit()
+print(regressor_OLS.summary())
+
+X_opt=X_opt[:,[0,2,3,4,5,6,7,8,9,10,11]]
+X_opt = np.array(X_opt, dtype=float)
+regressor_OLS = sm.OLS(y,X_opt).fit()
+print(regressor_OLS.summary())
+
+###### correlation plot #########
+X=pd.DataFrame(X_opt[:,[1,2,3,4,5,6,7,8,9,10]])
+fig_dims = (12, 8)
+fig, ax = plt.subplots(figsize=fig_dims)
+sns.heatmap(X.corr(), ax=ax)
+plt.title("positive tests",fontsize=28)
+plt.show()
+
+X_positive=X_opt[:,[1,2,3,4,5,6,7,8,9,10]]
+
+##################################backword elimination for negative tests################
+
+X = dataset.iloc[:,5:23].values
+y = dataset.iloc[:, 3].values
+# #backword elimination
+X=np.append(arr=np.ones((n,1)).astype(int),values=X ,axis=1)
+X_opt=X[ :, 0:19]
+X_opt = np.array(X_opt, dtype=float)
+regressor_OLS = sm.OLS(y,X_opt).fit()
+print(regressor_OLS.summary())
+
+X_opt=X_opt[:,[0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,18]]
+X_opt = np.array(X_opt, dtype=float)
+regressor_OLS = sm.OLS(y,X_opt).fit()
+print(regressor_OLS.summary())
+
+X_opt=X_opt[:,[0,1,2,3,4,5,6,7,8,10,11,12,13,14,15,16,17]]
+X_opt = np.array(X_opt, dtype=float)
+regressor_OLS = sm.OLS(y,X_opt).fit()
+print(regressor_OLS.summary())
+
+X_opt=X_opt[:,[0,1,3,4,5,6,7,8,9,10,11,12,13,14,15,16]]
+X_opt = np.array(X_opt, dtype=float)
+regressor_OLS = sm.OLS(y,X_opt).fit()
+print(regressor_OLS.summary())
+
+X_opt=X_opt[:,[0,1,2,3,4,5,6,8,9,10,11,12,13,14,15]]
+X_opt = np.array(X_opt, dtype=float)
+regressor_OLS = sm.OLS(y,X_opt).fit()
+print(regressor_OLS.summary())
+
+X_opt=X_opt[:,[0,1,2,3,4,5,7,8,9,10,11,12,13,14]]
+X_opt = np.array(X_opt, dtype=float)
+regressor_OLS = sm.OLS(y,X_opt).fit()
+print(regressor_OLS.summary())
+
+X_opt=X_opt[:,[0,1,3,4,5,6,7,8,9,10,11,12,13]]
+X_opt = np.array(X_opt, dtype=float)
+regressor_OLS = sm.OLS(y,X_opt).fit()
+print(regressor_OLS.summary())
+
+X=pd.DataFrame(X_opt[:,[1,2,3,4,5,6,7,8,9,10,11,12]])
+############## corrletion plot#########
+fig_dims = (12, 8)
+fig, ax = plt.subplots(figsize=fig_dims)
+sns.heatmap(X.corr(), ax=ax)
+plt.title("not positive tests", fontsize=28)
+plt.show()
+
+X_negative=X_opt[:,[1,2,3,4,5,6,7,8,9,10,11,12]]
+
+########################### starting the models for positive and negative tests #################
+for i in [2,3]:
+    
+    if i==3:
+        X=X_positive
+    elif i==4 :
+        X=X_negative
+        
     compering_table=[]
-    dataset = pd.read_csv('COVID-19.csv')
-    X = dataset.iloc[:,5:23].values
+    
     y = dataset.iloc[:, i].values
-    index = dataset.index
-    n = len(index)
-    
-    
-    #backword elimination
-    X=np.append(arr=np.ones((n,1)).astype(int),values=X ,axis=1)
-    
-    X_opt=X[ :, 0:18]
-    X_opt = np.array(X_opt, dtype=float)
-    regressor_OLS = sm.OLS(y,X_opt).fit()
-    
-    #x2=0.129 נוציא את
-    X_opt=X[ :,[ 0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,18]]
-    X_opt = np.array(X_opt, dtype=float)
-    regressor_OLS = sm.OLS(y,X_opt).fit()
-    
-    X_opt=X[ :,[ 0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,18]]
-    X_opt = np.array(X_opt, dtype=float)
-    regressor_OLS = sm.OLS(y,X_opt).fit()
-    
-    
-    X_opt=X[ :,[ 0,1,2,3,4,5,6,7,8,10,11,12,13,14,15,18]]
-    X_opt = np.array(X_opt, dtype=float)
-    regressor_OLS = sm.OLS(y,X_opt).fit()
-    print(regressor_OLS.summary()) 
-    
-    X_opt=X[ :,[ 0,1,3,4,5,6,7,8,10,11,12,13,14,15,18]]
-    X_opt = np.array(X_opt, dtype=float)
-    regressor_OLS = sm.OLS(y,X_opt).fit()
-    print(regressor_OLS.summary()) 
-    
-    
-    X_opt=X[ :,[ 0,1,3,4,5,6,7,10,11,12,13,14,15,18]]
-    X_opt = np.array(X_opt, dtype=float)
-    regressor_OLS = sm.OLS(y,X_opt).fit()
-    print(regressor_OLS.summary()) 
-    
-    X_opt=X[ :,[ 0,1,4,5,6,7,10,11,12,13,14,15,18]]
-    X_opt = np.array(X_opt, dtype=float)
-    regressor_OLS = sm.OLS(y,X_opt).fit()
-    print(regressor_OLS.summary()) 
-    
-    X_opt=X[ :,[ 0,1,4,5,6,10,11,12,13,14,15,18]]
-    X_opt = np.array(X_opt, dtype=float)
-    regressor_OLS = sm.OLS(y,X_opt).fit()
-    print(regressor_OLS.summary())
-    
-    X_opt=X[ :,[ 0,1,4,5,6,10,11,12,13,15,18]]
-    X_opt = np.array(X_opt, dtype=float)
-    regressor_OLS = sm.OLS(y,X_opt).fit()
-    print(regressor_OLS.summary())
-    
-    X=X_opt
-    
     # Splitting the dataset into the Training set and Test se
     X_train, X_test, y_train, y_test = train_test_split(X, y, test_size = 0.2, random_state = 0)
     
-    
-    
-    # Fitting Multiple Linear Regression to the Training set
+    ############ sacling the data ###########3
+    sc_x = StandardScaler()
+    X_train = sc_x.fit_transform(X_train)
+    X_test = sc_x.transform(X_test) 
+
+    ##################################### linear regression #####################################
     
     regressor = LinearRegression()
     regressor.fit(X_train, y_train)
-    
+
     # Predicting the Test set results
     y_pred = regressor.predict(X_test)
     error = (y_pred-y_test)#*(y_pred-y_test)
@@ -88,8 +170,10 @@ for i in [3,4]: # start with positive column and then the negative column
     b_0=regressor.intercept_
     b_1=regressor.coef_
     compering_table.append(["linear",r2_linear])
-    g=sns.regplot(y_test , y_pred,scatter_kws = {'color': 'blue'}, line_kws = {'color': 'red'}).set_title('linear regression')
-    #g.set(ylim=(0, 25000),xlim=(0, 25000))
+    g=sns.regplot(y_test , y_pred,scatter_kws = {'color': 'blue'}, line_kws = {'color': 'red'}).set_title('linear regression',fontsize=20)
+
+    xpoints = ypoints = plt.xlim()
+    plt.plot(xpoints, ypoints, linestyle='--', color='k', lw=3, scalex=False, scaley= False)
     plt.show()
     scores = []
     scores.append({
@@ -97,12 +181,11 @@ for i in [3,4]: # start with positive column and then the negative column
             'best_score': "_",
             'best_params': " b0 = "+str(b_0)+" b1 = "+ str(b_1 )
         })
-    ## בשלב זה צריך לעשות אילמנציה כמו שלמדנו בכיתה
     
-    #polynom
-    from sklearn.pipeline import make_pipeline
-    from sklearn.preprocessing import PolynomialFeatures
+    ############################### polynomial regression ##############################
     
+    
+    ########## choosing the best degree #########
     for j in range(1,6):
         degree=j# מספר דרגות החופש במשוואה
         polyreg=PolynomialFeatures()
@@ -117,8 +200,8 @@ for i in [3,4]: # start with positive column and then the negative column
         r2=r2_score(y_test , y_pred)
         adj_r2=1-(1-r2)*((n-1)/n-19-1)
         print(adj_r2)
-    # לפי החישובים ראינו שלא משנה דרגת החופש שבוחרים, השגיאה נשארת זהה ושואפת ל1 לכן נבחר דרגת חופש 2
-    
+
+    ########## best parametes nodel ##############
     degree=2
     polyreg=PolynomialFeatures(degree=2)
     
@@ -132,8 +215,9 @@ for i in [3,4]: # start with positive column and then the negative column
     b_1_poly=model.coef_
     compering_table.append(["poly",r2_poly])
     
-    g=sns.regplot(y_test, y_pred_poly,scatter_kws = {'color': 'green'}, line_kws = {'color': 'red'}).set_title('polinomial regression')
-   # g.set(ylim=(0, 25000),xlim=(0, 25000))
+    g=sns.regplot(y_test, y_pred_poly,scatter_kws = {'color': 'green'}, line_kws = {'color': 'red'}).set_title('polinomial regression',fontsize=20)
+    xpoints = ypoints = plt.xlim()
+    plt.plot(xpoints, ypoints, linestyle='--', color='k', lw=3, scalex=False, scaley= False)
     plt.show()
     
     scores.append({
@@ -142,7 +226,7 @@ for i in [3,4]: # start with positive column and then the negative column
             'best_params': "2 degrees b0 = "+str(b_0_poly)+" b's =  "+str(b_1_poly )
         })
     
-    ## cross validation
+    ############################# cross validation ##############################
     from sklearn.ensemble import RandomForestClassifier
     from sklearn.linear_model import Ridge
     from sklearn.model_selection import GridSearchCV
@@ -155,13 +239,13 @@ for i in [3,4]: # start with positive column and then the negative column
         'ridge': {
             'model': Ridge(),
             'params' : {
-                'alpha': arange(0, 1, 0.1) ,
+                'alpha': arange(0, 5, 0.1) ,
             }  
         },
         'lasso': {
             'model': Lasso(),
             'params' : {
-                'alpha': arange(0, 1, 0.1) 
+                'alpha': arange(0, 5, 0.1) 
             }  
         },
         'random_forest': {
@@ -194,7 +278,27 @@ for i in [3,4]: # start with positive column and then the negative column
     
     df = pd.DataFrame(scores,columns=['model','best_score','best_params'])
     
-    #ridge regression
+   ################################## ridge regression ##############################
+    
+   ########## this part is fot the comperisson plot ##############
+    fig, (ax1,ax2,ax3) = plt.subplots(1, 3, figsize=(22, 7), sharey=True)
+    
+    model_ridge=Ridge(alpha=0.1)    
+    model_ridge.fit(X_train,y_train)
+    y_pred_ridge = model_ridge.predict(X_test)
+    r2_ridge=r2_score(y_test , y_pred_ridge)
+
+    sns.regplot(y_test,  y_pred_ridge,scatter_kws = {'color': 'brown'}, line_kws = {'color': 'red'},ax=ax1).set_title('alpha = 0.1 : r2 = '+str(round(r2_ridge,2)),fontsize=20)
+
+    
+    model_ridge=Ridge(alpha=5)
+    model_ridge.fit(X_train,y_train)
+    y_pred_ridge = model_ridge.predict(X_test)
+    r2_ridge=r2_score(y_test , y_pred_ridge)
+    
+    sns.regplot(y_test,  y_pred_ridge,scatter_kws = {'color': 'brown'}, line_kws = {'color': 'red'},ax=ax2).set_title(' alpha = 5 : r2 = '+str(round(r2_ridge,2)),fontsize=20)
+    
+    ########## best parametes nodel ##############
     
     model_ridge=Ridge(alpha=df.iloc[2]['best_params']['alpha'])
     model_ridge.fit(X_train,y_train)
@@ -203,27 +307,38 @@ for i in [3,4]: # start with positive column and then the negative column
     b_0_ridge=model_ridge.intercept_
     b_1_ridge=model_ridge.coef_
     compering_table.append(["ridge",r2_ridge])
-    g=sns.regplot(y_test,  y_pred_ridge,scatter_kws = {'color': 'brown'}, line_kws = {'color': 'red'}).set_title('ridge regression')
-    plt.show()
-    #lasso regression
     
-    fig, (ax1,ax2,ax3) = plt.subplots(1, 3, figsize=(15, 5), sharey=True)
+    sns.regplot(y_test,  y_pred_ridge,scatter_kws = {'color': 'brown'}, line_kws = {'color': 'red'},ax=ax3).set_title('best alpha = '+str(df.iloc[3]['best_params']['alpha'])+" r2 = "+str(round(r2_ridge,2)),fontsize=20)
+    
+    fig.suptitle('compering different parameters in ridge regression',fontsize=20)
+     
+    xpoints = ypoints = plt.xlim()
+    plt.plot(xpoints, ypoints, linestyle='--', color='k', lw=3, scalex=False, scaley= False)
+    plt.show()
+    
+    plt.clf()
+    
+    ################################## lasso regression ##################################
+    
+    ########## this part is fot the comperisson plot ##############
+    fig, (ax1,ax2,ax3) = plt.subplots(1, 3, figsize=(22, 7), sharey=True)
     
     model_lasso=Lasso(alpha=0.1)
     model_lasso.fit(X_train,y_train)
     y_pred_lasso = model_lasso.predict(X_test)
     r2_lasso=r2_score(y_test , y_pred_lasso)
     
-    sns.regplot(y_test,  y_pred_lasso,scatter_kws = {'color': 'black'}, line_kws = {'color': 'red'},ax=ax1).set_title('alpha = 0.1 : r2 = '+str(round(r2_lasso,2)))
+    sns.regplot(y_test,  y_pred_lasso,scatter_kws = {'color': 'black'}, line_kws = {'color': 'red'},ax=ax1).set_title('alpha = 0.1 : r2 = '+str(round(r2_lasso,2)),fontsize=20)
     
-    model_lasso=Lasso(alpha=0.9)
+    model_lasso=Lasso(alpha=5)
     model_lasso.fit(X_train,y_train)
     y_pred_lasso = model_lasso.predict(X_test)
     r2_lasso=r2_score(y_test , y_pred_lasso)
 
     
-    sns.regplot(y_test,  y_pred_lasso,scatter_kws = {'color': 'black'}, line_kws = {'color': 'red'},ax=ax2).set_title(' alpha = 0.9 : r2 = '+str(round(r2_lasso,2)))
+    sns.regplot(y_test,  y_pred_lasso,scatter_kws = {'color': 'black'}, line_kws = {'color': 'red'},ax=ax2).set_title(' alpha = 5: r2 = '+str(round(r2_lasso,2)),fontsize=20)
 
+    ########## best parametes nodel ##############
     model_lasso=Lasso(alpha=df.iloc[3]['best_params']['alpha'])
     model_lasso.fit(X_train,y_train)
     y_pred_lasso = model_lasso.predict(X_test)
@@ -231,17 +346,21 @@ for i in [3,4]: # start with positive column and then the negative column
     b_0_lasso=model_lasso.intercept_
     b_1_lasso=model_lasso.coef_
     compering_table.append(["lasso",r2_lasso])
-    sns.regplot(y_test,  y_pred_lasso,scatter_kws = {'color': 'black'}, line_kws = {'color': 'red'},ax=ax3).set_title('best alpha = '+str(df.iloc[3]['best_params']['alpha'])+" r2 = "+str(round(r2_lasso,2)))
+    sns.regplot(y_test,  y_pred_lasso,scatter_kws = {'color': 'black'}, line_kws = {'color': 'red'},ax=ax3).set_title('best alpha = '+str(df.iloc[3]['best_params']['alpha'])+" r2 = "+str(round(r2_lasso,2)),fontsize=20)
     
-    fig.suptitle('compering different parameters in lasso regression')
+    fig.suptitle('compering different parameters in lasso regression',fontsize=20)
      
+    xpoints = ypoints = plt.xlim()
+    plt.plot(xpoints, ypoints, linestyle='--', color='k', lw=3, scalex=False, scaley= False)
     plt.show()
     
     plt.clf()
     
-    #random forest
+    ######################################  random forest #####################################
     
-    fig, (ax1,ax2,ax3) = plt.subplots(1, 3, figsize=(20, 5), sharey=True)
+    ########## this part is fot the comperisson plot ##############
+    
+    fig, (ax1,ax2,ax3) = plt.subplots(1, 3, figsize=(23, 7), sharey=True)
     
     RandomForest=RandomForestClassifier(n_estimators=1,max_depth=2)
     RandomForest.fit(X_train,y_train)
@@ -249,7 +368,7 @@ for i in [3,4]: # start with positive column and then the negative column
     r2_RandomForest=r2_score(y_test , y_pred_RandomForest)
 
     
-    sns.regplot(y_test, y_pred_RandomForest,scatter_kws = {'color': 'purple'}, line_kws = {'color': 'red'},ax=ax1).set_title('minimum n=1 depth =2 : r2 = '+str(round(r2_RandomForest,2)))
+    sns.regplot(y_test, y_pred_RandomForest,scatter_kws = {'color': 'purple'}, line_kws = {'color': 'red'},ax=ax1).set_title('minimum n=1 depth =2 : r2 = '+str(round(r2_RandomForest,2)),fontsize=20)
     
     RandomForest=RandomForestClassifier(n_estimators=3,max_depth=7)
     RandomForest.fit(X_train,y_train)
@@ -257,32 +376,36 @@ for i in [3,4]: # start with positive column and then the negative column
     r2_RandomForest=r2_score(y_test , y_pred_RandomForest)
 
     
-    sns.regplot(y_test, y_pred_RandomForest,scatter_kws = {'color': 'purple'}, line_kws = {'color': 'red'},ax=ax2).set_title('maximum n=3 depth =7 : r2 = '+str(round(r2_RandomForest,2)))
+    sns.regplot(y_test, y_pred_RandomForest,scatter_kws = {'color': 'purple'}, line_kws = {'color': 'red'},ax=ax2).set_title('maximum n=3 depth =7 : r2 = '+str(round(r2_RandomForest,2)),fontsize=20)
     
-
+    ########## best parametes nodel ##############
     RandomForest=RandomForestClassifier(n_estimators=df.iloc[4]['best_params']['n_estimators'],max_depth=df.iloc[4]['best_params']['max_depth'])
     RandomForest.fit(X_train,y_train)
     y_pred_RandomForest = RandomForest.predict(X_test)
     r2_RandomForest=r2_score(y_test , y_pred_RandomForest)
     compering_table.append(["RandomForest",r2_RandomForest])
     
-    sns.regplot(y_test, y_pred_RandomForest,scatter_kws = {'color': 'purple'}, line_kws = {'color': 'red'},ax=ax3).set_title(' best n = '+str(df.iloc[4]['best_params']['n_estimators'])+' depth= '+str(df.iloc[4]['best_params']['max_depth'])+" r2 ="+str(round(r2_RandomForest,2)))
+    sns.regplot(y_test, y_pred_RandomForest,scatter_kws = {'color': 'purple'}, line_kws = {'color': 'red'},ax=ax3).set_title(' best n = '+str(df.iloc[4]['best_params']['n_estimators'])+' depth= '+str(df.iloc[4]['best_params']['max_depth'])+" r2 ="+str(round(r2_RandomForest,2)),fontsize=20)
     
-    fig.suptitle('compering different parameters in random forest regression')
+    fig.suptitle('compering different parameters in random forest regression',fontsize=20)
     
+    xpoints = ypoints = plt.xlim()
+    plt.plot(xpoints, ypoints, linestyle='--', color='k', lw=3, scalex=False, scaley= False)
     plt.show()
     
     plt.clf()
     
     #knn
-    fig, (ax1,ax2,ax3) = plt.subplots(1, 3, figsize=(15, 5), sharey=True)
+    ########## this part is fot the comperisson plot ##############
+    
+    fig, (ax1,ax2,ax3) = plt.subplots(1, 3, figsize=(22,7), sharey=True)
     
     KNeighbors=KNeighborsClassifier(3)
     KNeighbors.fit(X_train,y_train)
     y_pred_KNeighbors = KNeighbors.predict(X_test)
     r2_KNeighbors=r2_score(y_test , y_pred_KNeighbors)
 
-    sns.regplot(y_test, y_pred_KNeighbors,scatter_kws = {'color': 'magenta'}, line_kws = {'color': 'red'},ax=ax1).set_title('minimum k =3 :r2= '+str(round( r2_KNeighbors,2)))
+    sns.regplot(y_test, y_pred_KNeighbors,scatter_kws = {'color': 'magenta'}, line_kws = {'color': 'red'},ax=ax1).set_title('minimum k =3 :r2= '+str(round( r2_KNeighbors,2)),fontsize=20)
     
     
     KNeighbors=KNeighborsClassifier(20)
@@ -290,9 +413,9 @@ for i in [3,4]: # start with positive column and then the negative column
     y_pred_KNeighbors = KNeighbors.predict(X_test)
     r2_KNeighbors=r2_score(y_test , y_pred_KNeighbors)
 
-    sns.regplot(y_test, y_pred_KNeighbors,scatter_kws = {'color': 'magenta'}, line_kws = {'color': 'red'},ax=ax2).set_title(' maximum k =20 :r2= '+str(round( r2_KNeighbors,2)))
+    sns.regplot(y_test, y_pred_KNeighbors,scatter_kws = {'color': 'magenta'}, line_kws = {'color': 'red'},ax=ax2).set_title(' maximum k =20 :r2= '+str(round( r2_KNeighbors,2)),fontsize=20)
 
-    
+    ########## best parametes nodel ##############
     KNeighbors=KNeighborsClassifier(n_neighbors=df.iloc[5]['best_params']['n_neighbors'], metric = 'minkowski',p=2)
     KNeighbors.fit(X_train,y_train)
     y_pred_KNeighbors = KNeighbors.predict(X_test)
@@ -300,10 +423,11 @@ for i in [3,4]: # start with positive column and then the negative column
     compering_table.append(["KNeighbors",r2_KNeighbors])
     
 
-    sns.regplot(y_test, y_pred_KNeighbors,scatter_kws = {'color': 'magenta'}, line_kws = {'color': 'red'},ax=ax3).set_title('best k = '+str(df.iloc[5]['best_params']['n_neighbors'])+' r2 = '+str(round( r2_KNeighbors,2)))
+    sns.regplot(y_test, y_pred_KNeighbors,scatter_kws = {'color': 'magenta'}, line_kws = {'color': 'red'},ax=ax3).set_title('best k = '+str(df.iloc[5]['best_params']['n_neighbors'])+' r2 = '+str(round( r2_KNeighbors,2)),fontsize=20)
     
-    fig.suptitle('compering different parameters in KNN regression')
-    
+    fig.suptitle('compering different parameters in KNN regression',fontsize=20)
+    xpoints = ypoints = plt.xlim()
+    plt.plot(xpoints, ypoints, linestyle='--', color='k', lw=3, scalex=False, scaley= False)
     plt.show()
 
     plt.clf()
@@ -311,5 +435,3 @@ for i in [3,4]: # start with positive column and then the negative column
     comperison=pd.DataFrame(compering_table,columns=("regression","r squerd"))
     print(comperison)
     print(df)
-    plt.clf()
-
