@@ -1,15 +1,16 @@
 import pandas as pd
 import numpy as np
 from sklearn.model_selection import train_test_split
-from sklearn.linear_model import LinearRegression
-import statsmodels.formula.api as sm
-import statsmodels.api as sm
-from sklearn.metrics import r2_score
-import matplotlib.pyplot as plt
 import seaborn as sns
 from mlxtend.feature_selection import SequentialFeatureSelector as sfs
 from sklearn.model_selection import cross_val_predict
 from sklearn.metrics import classification_report, confusion_matrix
+from sklearn.model_selection import  RandomizedSearchCV
+from sklearn.neighbors import KNeighborsClassifier
+from sklearn.model_selection import RepeatedStratifiedKFold
+from sklearn.linear_model import LogisticRegression
+from sklearn.svm import LinearSVC
+from sklearn.svm import SVC
 
 def cunf(y_pred,df_name ):
     
@@ -22,11 +23,11 @@ dataset = pd.read_csv('dataset.csv')
 
 sns.countplot(dataset['Purchased'], label = "Count")
 
-X=dataset.drop(['Purchased'], axis = 1) 
-y=dataset['Purchased']
+X=dataset.iloc[:,[0,1]].values
+y=dataset.iloc[:,2].values
 
 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size = 0.2,
-random_state = 20)
+random_state = 2)
 
 #normalizing data
 X_train_min=X_train.min()
@@ -36,16 +37,10 @@ X_test_range=(X_test - X_test_min).max()
 X_train_scaled = (X_train - X_train_min)/X_train_range
 X_test_scaled = (X_test - X_test_min)/X_test_range
 
-from sklearn.model_selection import  RandomizedSearchCV
-from numpy import arange
-from sklearn.neighbors import KNeighborsClassifier
-from sklearn.model_selection import RepeatedStratifiedKFold
-from sklearn.linear_model import LogisticRegression
-from sklearn.svm import LinearSVC
-from sklearn.svm import SVC
-scores = []
 
-cv = RepeatedStratifiedKFold(n_splits=100, random_state=0)
+scores = []
+# spliting the data into 1000 splits
+cv = RepeatedStratifiedKFold(n_splits=612, random_state=2)
    
 model_params = {
     'KNeighbors_Classifier': {
@@ -66,14 +61,14 @@ model_params = {
         }  
     
     }, 
-    # 'PolynomialSVC_classifier': {
-    #     'model': SVC(),
-    #     'params' : {
-    #         'kernel': 'poly',
-    #         'degree': [2,3,4,5]
-    #     }  
+    'PolynomialSVC_classifier': {
+        'model': SVC(),
+        'params' : {
+            'kernel': ['poly'],
+            'degree': [2,3,4,5]
+        }  
     
-    # },
+    },
     'GaussianSVC_classifier': {
         'model': SVC(),
         'params' : {
@@ -86,11 +81,10 @@ model_params = {
  
 
 from sklearn.metrics import f1_score, make_scorer
-
 f1 = make_scorer(f1_score , average='macro')  
-    
+from sklearn.model_selection import GridSearchCV
 for model_name, mp in model_params.items():
-    clf = RandomizedSearchCV(mp['model'], mp['params'], cv=cv, return_train_score=False,random_state=1,scoring=f1)
+    clf = GridSearchCV(mp['model'], mp['params'], cv=cv, return_train_score=False,scoring=f1)
     clf.fit(X, y)
     cv_results=clf.cv_results_
     scores.append({
@@ -112,6 +106,7 @@ y_pred_knn=knn_model.predict(X_test_scaled)
 df_name='knn_cunf_table'
 cunf(y_pred_knn,df_name)
 
+
 ########################################logistig##############################
 
 Logistic_model=LogisticRegression()
@@ -119,6 +114,7 @@ Logistic_model.fit(X_train_scaled,y_train)
 y_pred_Logistic=Logistic_model.predict(X_test_scaled)
 df_name='Logistic_cunf_table'
 cunf(y_pred_Logistic,df_name)
+
 
 ###################################### linear SVC ##############################
 
@@ -128,14 +124,32 @@ y_pred_Linear=Linear_model.predict(X_test_scaled)
 df_name='Linear_cunf_table'
 cunf(y_pred_Linear,df_name)
 
+###################################### poly SVC ##############################
+
+poly_model=SVC(kernel=df.iloc[3]['best_params']['kernel'],degree=df.iloc[3]['best_params']['degree'])
+poly_model.fit(X_train_scaled,y_train)
+y_pred_poly=poly_model.predict(X_test_scaled)
+df_name='poly_cunf_table'
+cunf(y_pred_poly,df_name)
+
+
 ################################### gous SVC #####################################
 
-gous_model=SVC(C=df.iloc[3]['best_params']['C'])
+gous_model=SVC(C=df.iloc[4]['best_params']['C'])
 gous_model.fit(X_train_scaled,y_train)
 y_pred_gous=gous_model.predict(X_test_scaled)
 df_name='gous_cunf_table'
 cunf(y_pred_gous,df_name)
 
 print(knn_cunf_table)
+print(classification_report(y_test,y_pred_knn))
 print(Logistic_cunf_table)
+print(classification_report(y_test,y_pred_Logistic))
 print(Linear_cunf_table)
+print(classification_report(y_test,y_pred_Linear))
+print(poly_cunf_table)
+print(classification_report(y_test,y_pred_poly))
+print(gous_cunf_table)
+print(classification_report(y_test,y_pred_gous))
+
+print(df)
