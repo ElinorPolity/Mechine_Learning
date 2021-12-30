@@ -1,0 +1,182 @@
+import pandas as pd
+import numpy as np
+from sklearn.model_selection import train_test_split
+import seaborn as sns
+from mlxtend.feature_selection import SequentialFeatureSelector as sfs
+from sklearn.model_selection import cross_val_predict
+from sklearn.metrics import classification_report, confusion_matrix,f1_score
+from sklearn.model_selection import  RandomizedSearchCV
+from sklearn.neighbors import KNeighborsClassifier
+from sklearn.model_selection import RepeatedStratifiedKFold
+from sklearn.linear_model import LogisticRegression
+from sklearn.svm import LinearSVC
+from sklearn.svm import SVC
+from random import randrange
+import statistics
+
+def cunf(y_pred,df_name ):
+    
+    cm=np.array(confusion_matrix(y_test, y_pred,labels=[1,0]))
+    globals()[str(df_name)] = pd.DataFrame(cm, index=["is_buy","not buy"],
+                              columns=["predict_buy","predict not buy"])
+
+
+dataset = pd.read_csv('dataset.csv')
+
+sns.countplot(dataset['Purchased'], label = "Count")
+
+X=dataset.iloc[:,[0,1]].values
+y=dataset.iloc[:,2].values
+
+knn_pd=pd.DataFrame(columns=['1','2','3','4','5','6','7','8','9','10','11','12','13','14','15','16','17','18','19','20'] )
+logistic_list=[]
+linear_list=[]
+poly_pd=pd.DataFrame(columns=['2','3','4','5'])
+gous_pd=pd.DataFrame(columns=['0.2','0.5','1.2','1.8','3'])
+for i in range(1,1001):
+    random_state_idex=randrange(1, 1000, 1)
+    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size = 0.2, random_state = 950)
+    
+    #normalizing data
+    X_train_min=X_train.min()
+    X_test_min=X_test.min()
+    X_train_range=(X_train - X_train_min).max()
+    X_test_range=(X_test - X_test_min).max()
+    X_train_scaled = (X_train - X_train_min)/X_train_range
+    X_test_scaled = (X_test - X_test_min)/X_test_range
+    
+    
+    # scores = []
+    
+       
+    # model_params = {
+    #     'KNeighbors_Classifier': {
+    #         'model': KNeighborsClassifier(),
+    #         'params' : {
+    #             'n_neighbors': [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20]
+    #         }  
+    #     },
+    #     'logistic_classifier': {
+    #         'model': LogisticRegression(),
+    #         'params' : {
+    #         }  
+        
+    #     },
+    #     'linearSVC_classifier': {
+    #         'model': LinearSVC(),
+    #         'params' : {
+    #         }  
+        
+    #     }, 
+    #     'PolynomialSVC_classifier': {
+    #         'model': SVC(),
+    #         'params' : {
+    #             'kernel': ['poly'],
+    #             'degree': [2,3,4,5]
+    #         }  
+        
+    #     },
+    #     'GaussianSVC_classifier': {
+    #         'model': SVC(),
+    #         'params' : {
+    #             'C':[ 0.2,0.5,1.2,1.8,3]
+                    
+    #         }  
+        
+    #     },
+    # }
+     
+    
+
+    
+# df = pd.DataFrame(scores,columns=['model','best_score','best_params','mean_test_score','std_test_score'])
+
+    ######################################### knn ##################################
+    knn_list=[]
+    for i in range(1,21):
+        knn_model=KNeighborsClassifier(n_neighbors=i)
+        knn_model.fit(X_train_scaled,y_train)
+        y_pred_knn=knn_model.predict(X_test_scaled)
+        knn_list.append(f1_score(y_test,y_pred_knn))
+    to_append = knn_list
+    df_length = len(knn_pd)
+    knn_pd.loc[df_length] = to_append
+
+    
+    ########################################logistig##############################
+    
+    Logistic_model=LogisticRegression()
+    Logistic_model.fit(X_train_scaled,y_train)
+    y_pred_Logistic=Logistic_model.predict(X_test_scaled)
+    df_name='Logistic_cunf_table'
+    f1_score(y_test,y_pred_Logistic)
+    logistic_list.append(f1_score(y_test,y_pred_knn))
+
+    
+    ###################################### linear SVC ##############################
+    
+    Linear_model=LinearSVC()
+    Linear_model.fit(X_train_scaled,y_train)
+    y_pred_Linear=Linear_model.predict(X_test_scaled)
+    df_name='Linear_cunf_table'
+    f1_score(y_test,y_pred_Linear)
+    linear_list.append(f1_score(y_test,y_pred_Linear))
+    
+
+#     ###################################### poly SVC ##############################
+    
+    poly_list=[]
+    for i in range(2,6):
+        poly_model=SVC(kernel='poly',degree=i)
+        poly_model.fit(X_train_scaled,y_train)
+        y_pred_poly=poly_model.predict(X_test_scaled)
+        df_name='poly_cunf_table'
+        poly_list.append(f1_score(y_test,y_pred_poly))
+    to_append = poly_list
+    df_length = len(poly_pd)
+    poly_pd.loc[df_length] = to_append
+
+
+    
+    
+#     ################################### gous SVC #####################################
+    gous_list=[]
+    for i in [0.2,0.5,1.2,1.8,3]:
+        gous_model=SVC(C=i)
+        gous_model.fit(X_train_scaled,y_train)
+        y_pred_gous=gous_model.predict(X_test_scaled)
+        df_name='gous_cunf_table'
+        gous_list.append(f1_score(y_test,y_pred_gous))
+    to_append = gous_list
+    df_length = len(gous_pd)
+    gous_pd.loc[df_length] = to_append
+
+
+knn_pd.loc['mean'] = knn_pd.mean()
+knn_pd.loc['std'] = knn_pd.std()
+logistic_mean=sum(logistic_list) / len(logistic_list)
+logistic_std=statistics.stdev(logistic_list)
+linear_mean=sum(linear_list) / len(linear_list)
+linear_std=statistics.stdev(linear_list)
+poly_pd.loc['mean'] = poly_pd.mean()
+poly_pd.loc['std'] = poly_pd.std()
+gous_pd.loc['mean'] = gous_pd.mean()
+gous_pd.loc['std'] = gous_pd.std()
+
+print(knn_pd.tail(2))
+
+
+
+
+
+# print(classification_report(y_test,y_pred_knn))
+# print(Logistic_cunf_table)
+# print(classification_report(y_test,y_pred_Logistic))
+# print(Linear_cunf_table)
+# print(classification_report(y_test,y_pred_Linear))
+# print(poly_cunf_table)
+# print(classification_report(y_test,y_pred_poly))
+# print(gous_cunf_table)
+# print(classification_report(y_test,y_pred_gous))
+
+# print(df)
